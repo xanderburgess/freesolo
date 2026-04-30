@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Freesolo Asset Generator</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400&family=Hanken+Grotesk:wght@500&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --sidebar-bg: #05081D;
+    --preview-bg: #191F4C;
+    --surface: transparent;
+    --border: #1a1f3d;
+    --border-hover: #2a3055;
+    --text: #F5F6FA;
+    --text-dim: #6b7196;
+    --text-dimmer: #4a4f73;
+    --accent: #57FF8F;
+    --blue: #5F72FF;
+  }
+
+  html, body { height: 100%; }
+
+  body {
+    background: var(--sidebar-bg);
+    color: var(--text);
+    font-family: 'Hanken Grotesk', sans-serif;
+    font-weight: 500;
+    overflow: hidden;
+  }
+
+  .layout {
+    display: flex;
+    height: 100vh;
+    width: 100vw;
+  }
+
+  /* ---------- Sidebar ---------- */
+  .sidebar {
+    width: 300px;
+    flex-shrink: 0;
+    background: var(--sidebar-bg);
+    padding: 28px 24px 20px;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+  }
+
+  .logo-area {
+    padding-bottom: 18px;
+    margin-bottom: 22px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .logo-area svg { display: block; }
+
+  .logo-subtitle {
+    font-family: 'Geist Mono', monospace;
+    font-size: 11px;
+    font-weight: 400;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+  }
+
+  .section {
+    margin-bottom: 22px;
+  }
+
+  .section-title {
+    font-family: 'Geist Mono', monospace;
+    font-size: 11px;
+    font-weight: 400;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 10px;
+  }
+
+  /* ---------- Buttons (Dimensions / Distribution) ---------- */
+  .btn-grid {
+    display: flex;
+    gap: 6px;
+  }
+
+  .grid-btn {
+    flex: 1;
+    padding: 9px 0;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 0;
+    color: var(--text);
+    font-family: 'Hanken Grotesk', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    text-align: center;
+    letter-spacing: 0.02em;
+  }
+
+  .grid-btn:hover {
+    border-color: var(--border-hover);
+  }
+
+  .grid-btn.active {
+    border-color: var(--blue);
+    color: var(--text);
+  }
+
+  .dist-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+  }
+
+  .dist-grid .grid-btn {
+    padding: 9px 4px;
+    font-size: 11px;
+  }
+
+  /* ---------- Theme buttons ---------- */
+  .theme-row {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 14px;
+  }
+
+  .theme-btn {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 10px 10px;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 0;
+    color: var(--text);
+    font-family: 'Hanken Grotesk', sans-serif;
+    font-weight: 500;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    text-align: center;
+  }
+
+  .theme-btn:hover { border-color: var(--border-hover); }
+  .theme-btn.active { border-color: var(--blue); }
+
+  .theme-swatch {
+    display: flex;
+    width: 100%;
+    height: 22px;
+    border-radius: 0;
+    overflow: hidden;
+  }
+
+  .theme-swatch .sw-light { flex: 1; }
+  .theme-swatch .sw-dark  { flex: 1; }
+
+  /* ---------- Checkboxes ---------- */
+  .check-row {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    font-family: 'Hanken Grotesk', sans-serif;
+    font-weight: 500;
+    font-size: 13px;
+    color: var(--text);
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .checkbox-label input[type="checkbox"] {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 14px;
+    height: 14px;
+    border: 1px solid var(--text-dim);
+    border-radius: 0;
+    background: transparent;
+    cursor: pointer;
+    position: relative;
+    transition: all 0.15s ease;
+    flex-shrink: 0;
+  }
+
+  .checkbox-label input[type="checkbox"]:hover {
+    border-color: var(--text);
+  }
+
+  .checkbox-label input[type="checkbox"]:checked {
+    background: var(--accent);
+    border-color: var(--accent);
+  }
+
+  .checkbox-label input[type="checkbox"]:checked::after {
+    content: '';
+    position: absolute;
+    left: 3px;
+    top: 0px;
+    width: 4px;
+    height: 8px;
+    border: solid #05081D;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+  }
+
+  /* ---------- Action buttons ---------- */
+  .actions {
+    margin-top: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding-top: 20px;
+  }
+
+  .btn {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px solid transparent;
+    border-radius: 0;
+    font-family: 'Hanken Grotesk', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    text-align: center;
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    color: #05081D;
+    border-color: var(--accent);
+  }
+
+  .btn-primary:hover {
+    filter: brightness(1.08);
+  }
+
+  .btn-secondary {
+    background: transparent;
+    color: var(--text);
+    border: 1px solid var(--border);
+  }
+
+  .btn-secondary:hover { border-color: var(--text); }
+
+  .footer {
+    margin-top: 22px;
+    padding-top: 18px;
+    border-top: 1px solid var(--border);
+    font-family: 'Geist Mono', monospace;
+    font-weight: 400;
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    color: var(--text-dimmer);
+    text-transform: uppercase;
+    text-align: center;
+  }
+
+  /* ---------- Sliders / Control rows ---------- */
+  .control-group {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .control-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .control-row label {
+    font-family: 'Hanken Grotesk', sans-serif;
+    font-weight: 500;
+    font-size: 12px;
+    color: var(--text);
+    flex: 0 0 78px;
+    min-width: 0;
+  }
+
+  .control-row input[type="range"] {
+    flex: 1;
+    min-width: 0;
+    accent-color: var(--blue);
+    height: 3px;
+    cursor: pointer;
+  }
+
+  .control-row .value {
+    font-family: 'Geist Mono', monospace;
+    font-size: 11px;
+    color: var(--blue);
+    flex: 0 0 32px;
+    text-align: right;
+  }
+
+  /* Advanced dropdown */
+  .advanced-toggle {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    font-family: 'Geist Mono', monospace;
+    font-size: 11px;
+    font-weight: 400;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    padding: 0;
+    background: none;
+    border: none;
+    width: 100%;
+    text-align: left;
+    transition: color 0.15s ease;
+  }
+
+  .advanced-toggle:hover { color: var(--text); }
+
+  .advanced-toggle .arrow {
+    transition: transform 0.2s ease;
+    font-size: 9px;
+    display: inline-block;
+  }
+
+  .advanced-toggle.open .arrow {
+    transform: rotate(90deg);
+  }
+
+  .advanced-content {
+    display: none;
+    padding-top: 14px;
+  }
+
+  .advanced-content.open {
+    display: block;
+  }
+
+  /* ---------- Preview area ---------- */
+  .preview-area {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 100px;
+    background: #ffffff;
+    overflow: hidden;
+  }
+
+  .preview-container {
+    max-width: 100%;
+    max-height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .preview-container svg {
+    display: block;
+    max-width: 100%;
+    max-height: calc(100vh - 200px);
+    width: auto;
+    height: auto;
+  }
+
+</style>
+</head>
+<body>
+
+<div class="layout">
+  <aside class="sidebar">
+
+    <!-- Logo -->
+    <div class="logo-area">
+      <svg width="140" height="24" viewBox="0 0 349 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M6.52898e-05 12.6744V27.0981L10.3989 33.9332L13.5011 33.0586V22.8766L2.29211 26.0364V24.1557L45 12.1233V0L6.52898e-05 12.6744Z" fill="#F5F6FA"/>
+        <path d="M0 38.7412V53.1648L10.3988 60L13.501 59.1254V48.9434L2.29204 52.1031V50.2225L44.9999 38.1901V26.0668L0 38.7412Z" fill="#F5F6FA"/>
+        <path d="M328.905 59.7497C317.307 59.7497 309.046 51.1551 309.046 38.9711C309.046 26.7871 317.307 18.2734 328.905 18.2734C340.502 18.2734 348.682 26.7871 348.682 38.9711C348.682 51.1551 340.421 59.7497 328.905 59.7497ZM328.905 55.2451C335.583 55.2451 340.002 49.3199 340.002 38.9711C340.002 28.6223 335.578 22.783 328.905 22.783C321.898 22.783 317.641 28.9559 317.641 38.9711C317.641 48.9863 321.898 55.2451 328.905 55.2451Z" fill="#F5F6FA"/>
+        <path d="M294.668 9.76496C294.668 5.67497 293.667 5.26041 290.497 4.92674V2.75788L301.847 0.755859H302.347V50.2402C302.347 55.2452 302.848 55.9985 305.937 56.5799V58.7488H291.084V56.5799C294.253 55.9935 294.673 55.2452 294.673 50.2402V9.76496H294.668Z" fill="#F5F6FA"/>
+        <path d="M268.263 59.7497C256.665 59.7497 248.404 51.1551 248.404 38.9711C248.404 26.7871 256.665 18.2734 268.263 18.2734C279.86 18.2734 288.04 26.7871 288.04 38.9711C288.04 51.1551 279.779 59.7497 268.263 59.7497ZM268.263 55.2451C274.941 55.2451 279.36 49.3199 279.36 38.9711C279.36 28.6223 274.936 22.783 268.263 22.783C261.256 22.783 256.999 28.9559 256.999 38.9711C256.999 48.9863 261.256 55.2451 268.263 55.2451Z" fill="#F5F6FA"/>
+        <path d="M229.198 59.7485C224.86 59.7485 220.27 58.4947 216.933 56.159V47.3117H219.188C221.524 52.9032 224.779 55.4917 229.704 55.4917C233.541 55.4917 237.13 53.5706 237.13 49.8193C237.13 47.1499 235.629 45.8153 231.539 43.9801L225.366 41.2248C220.194 38.8891 217.686 35.1328 217.686 30.6282C217.686 23.5352 223.612 18.2773 232.039 18.2773C236.129 18.2773 239.966 19.2784 242.889 20.7799V29.4604H240.634C239.213 24.9558 236.296 22.6201 231.539 22.6201C227.449 22.6201 224.193 24.7081 224.193 28.1257C224.193 30.7141 225.694 32.3825 229.699 34.0508L236.038 36.8062C241.21 39.061 243.718 42.4786 243.718 47.3218C243.718 54.8345 237.292 59.7536 229.198 59.7536V59.7485Z" fill="#F5F6FA"/>
+        <path d="M196.24 59.7497C185.31 59.7497 176.549 51.7365 176.549 38.9711C176.549 27.2067 184.476 18.2734 194.992 18.2734C203.753 18.2734 210.432 23.6122 210.432 33.961V36.4635H184.228C184.228 47.4797 190.32 53.3189 198.915 53.3189C203.753 53.3189 207.009 51.8983 210.265 49.3958L212.186 51.3169C207.762 56.8225 202.924 59.7446 196.246 59.7446L196.24 59.7497ZM184.476 32.5454H202.752C202.671 26.4534 199.496 22.4494 194.405 22.4494C189.067 22.4494 185.477 26.1197 184.476 32.5454Z" fill="#F5F6FA"/>
+        <path d="M156.104 59.7497C145.173 59.7497 136.412 51.7365 136.412 38.9711C136.412 27.2067 144.339 18.2734 154.855 18.2734C163.616 18.2734 170.295 23.6122 170.295 33.961V36.4635H144.092C144.092 47.4797 150.184 53.3189 158.778 53.3189C163.616 53.3189 166.872 51.8983 170.128 49.3958L172.049 51.3169C167.625 56.8225 162.787 59.7446 156.109 59.7446L156.104 59.7497ZM144.334 32.5454H162.61C162.529 26.4534 159.354 22.4494 154.263 22.4494C148.925 22.4494 145.335 26.1197 144.334 32.5454Z" fill="#F5F6FA"/>
+        <path d="M111.291 27.8729C111.291 23.7829 110.29 23.3683 107.12 23.0347V20.8658L118.47 18.8638H119.056V30.2945H119.557C121.893 21.8668 125.482 18.2773 130.907 18.2773C132.075 18.2773 132.909 18.3633 133.829 18.697V26.6242C132.909 26.2905 131.827 26.1237 130.573 26.1237C125.068 26.1237 121.392 30.1277 119.056 37.1398V50.2389C119.056 55.1631 119.476 55.9973 123.227 56.5787V58.7475H107.707V56.5787C110.876 55.9922 111.296 55.244 111.296 50.2389V27.8729H111.291Z" fill="#F5F6FA"/>
+        <path d="M68.8387 10.6792C68.8387 4.58721 67.7518 3.50025 63.5 2.91886V0.75H103.889V13.2677H101.554C100.967 7.42846 97.5495 5.17366 89.2887 5.17366H77.1906V27.8734H86.7861C93.7123 27.8734 96.3008 26.1191 96.5485 21.7813H98.8033V38.389H96.5485C96.2957 34.0513 93.7123 32.297 86.7861 32.297H77.1906V48.571C77.1906 54.7439 78.2776 55.9168 83.1158 56.5842V58.753H63.5051V56.5842C67.8428 55.8309 68.8438 54.749 68.8438 48.571V10.6792H68.8387Z" fill="#F5F6FA"/>
+      </svg>
+      <div class="logo-subtitle">Asset Generator</div>
+    </div>
+
+    <!-- Dimensions -->
+    <div class="section">
+      <div class="section-title">Dimensions</div>
+      <div class="btn-grid">
+        <button class="grid-btn active" data-dim onclick="setDim(1080,1080,this)">Square</button>
+        <button class="grid-btn" data-dim onclick="setDim(1920,1080,this)">Wide</button>
+        <button class="grid-btn" data-dim onclick="setDim(1080,1920,this)">Tall</button>
+      </div>
+      <input type="hidden" id="svgW" value="1080">
+      <input type="hidden" id="svgH" value="1080">
+    </div>
+
+    <!-- Theme -->
+    <div class="section">
+      <div class="section-title">Theme</div>
+      <div class="theme-row">
+        <button class="theme-btn active" onclick="applyTheme('purple', this)">
+          <span class="theme-swatch">
+            <span class="sw-light" style="background:#5F72FF;"></span>
+            <span class="sw-dark" style="background:#191F4C;"></span>
+          </span>
+          Purple
+        </button>
+        <button class="theme-btn" onclick="applyTheme('green', this)">
+          <span class="theme-swatch">
+            <span class="sw-light" style="background:#57FF8F;"></span>
+            <span class="sw-dark" style="background:#0A363A;"></span>
+          </span>
+          Green
+        </button>
+        <button class="theme-btn" onclick="applyTheme('pink', this)">
+          <span class="theme-swatch">
+            <span class="sw-light" style="background:#FF91FE;"></span>
+            <span class="sw-dark" style="background:#5A1F37;"></span>
+          </span>
+          Pink
+        </button>
+      </div>
+
+      <div class="check-row">
+        <label class="checkbox-label">
+          <input type="checkbox" id="useInverse" onchange="generate()">
+          <span>Invert Colors</span>
+        </label>
+        <label class="checkbox-label">
+          <input type="checkbox" id="useAccent" onchange="generate()">
+          <span>Accent</span>
+        </label>
+      </div>
+    </div>
+
+    <!-- Distribution -->
+    <div class="section">
+      <div class="section-title">Distribution</div>
+      <div class="dist-grid">
+        <button class="grid-btn active" onclick="setDist('even',this)">Even</button>
+        <button class="grid-btn" onclick="setDist('edge-heavy',this)">Edges</button>
+        <button class="grid-btn" onclick="setDist('top-heavy',this)">Top</button>
+        <button class="grid-btn" onclick="setDist('bottom-heavy',this)">Bottom</button>
+        <button class="grid-btn" onclick="setDist('diagonal',this)">Diagonal ↘</button>
+        <button class="grid-btn" onclick="setDist('diagonal-inv',this)">Diagonal ↗</button>
+      </div>
+      <input type="hidden" id="distribution" value="even">
+    </div>
+
+    <!-- Controls -->
+    <div class="section">
+      <div class="section-title">Controls</div>
+      <div class="control-group">
+        <div class="control-row">
+          <label>Fill Amount</label>
+          <input type="range" id="fillAmount" min="10" max="95" value="90" oninput="updateVal(this, '%'); generate()">
+          <span class="value" id="fillAmount-val">90%</span>
+        </div>
+      </div>
+
+      <!-- Advanced -->
+      <div style="margin-top: 16px;">
+        <button class="advanced-toggle" id="advancedToggle" onclick="toggleAdvanced()">
+          <span class="arrow">▶</span> Advanced
+        </button>
+        <div class="advanced-content" id="advancedContent">
+          <div class="control-group">
+            <div class="control-row">
+              <label>Columns</label>
+              <input type="range" id="numCols" min="4" max="10" value="7" oninput="updateVal(this); generate()">
+              <span class="value" id="numCols-val">7</span>
+            </div>
+            <div class="control-row">
+              <label>Width Taper</label>
+              <input type="range" id="widthTaper" min="0" max="100" value="65" oninput="updateVal(this); generate()">
+              <span class="value" id="widthTaper-val">65</span>
+            </div>
+            <div class="control-row">
+              <label>Rows</label>
+              <input type="range" id="rowCount" min="4" max="10" value="7" oninput="updateVal(this); generate()">
+              <span class="value" id="rowCount-val">7</span>
+            </div>
+            <div class="control-row">
+              <label>Height Var</label>
+              <input type="range" id="heightVar" min="0" max="100" value="90" oninput="updateVal(this); generate()">
+              <span class="value" id="heightVar-val">90</span>
+            </div>
+            <div class="control-row">
+              <label>Accent Ratio</label>
+              <input type="range" id="accentRatio" min="5" max="40" value="15" oninput="updateVal(this, '%'); generate()">
+              <span class="value" id="accentRatio-val">15%</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="actions">
+      <button class="btn btn-primary" onclick="generate()">Regenerate</button>
+      <button class="btn btn-secondary" id="copyBtn" onclick="copySVG()">Copy SVG</button>
+      <div class="footer">Copyright © 2026 Linkd Inc.</div>
+    </div>
+
+  </aside>
+
+  <main class="preview-area" id="preview-area">
+    <div class="preview-container" id="preview-container"></div>
+  </main>
+</div>
+
+<script>
+const THEMES = {
+  purple: { bg: '#191F4C', primary: '#5F72FF' },
+  green:  { bg: '#0A363A', primary: '#57FF8F' },
+  pink:   { bg: '#5A1F37', primary: '#FF91FE' },
+};
+
+let currentTheme = 'purple';
+
+// --- UI helpers ---
+function updateVal(el, suffix) {
+  document.getElementById(el.id + '-val').textContent = el.value + (suffix || '');
+}
+
+function toggleAdvanced() {
+  const toggle = document.getElementById('advancedToggle');
+  const content = document.getElementById('advancedContent');
+  toggle.classList.toggle('open');
+  content.classList.toggle('open');
+}
+
+function applyTheme(name, btn) {
+  currentTheme = name;
+  document.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  generate();
+}
+
+function updatePreviewBg() {
+  // Preview canvas stays white — no-op kept for compatibility
+}
+
+function setDim(w, h, btn) {
+  document.getElementById('svgW').value = w;
+  document.getElementById('svgH').value = h;
+  document.querySelectorAll('[data-dim]').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  generate();
+}
+
+function setDist(val, btn) {
+  document.getElementById('distribution').value = val;
+  document.querySelectorAll('.dist-grid .grid-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  generate();
+}
+
+// --- Seeded PRNG ---
+function mulberry32(a) {
+  return function() {
+    a |= 0; a = a + 0x6D2B79F5 | 0;
+    var t = Math.imul(a ^ a >>> 15, 1 | a);
+    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  }
+}
+
+// --- Distribution weight functions ---
+// Returns a 0..1 multiplier where 0 = never fill, 1 = full fill probability.
+// Strong contrast between "in the zone" and "out of the zone" so the
+// distribution choice is actually visible.
+function getDistributionWeight(dist, colFrac, rowFrac) {
+  switch (dist) {
+    case 'even':
+      return 1;
+
+    case 'edge-heavy': {
+      // Distance from center, normalized to 0..1
+      const dx = Math.abs(colFrac - 0.5) * 2;
+      const dy = Math.abs(rowFrac - 0.5) * 2;
+      const d = Math.max(dx, dy);
+      // Sharp falloff: middle ~0.05, edges 1.0
+      return Math.max(0.05, Math.pow(d, 1.5));
+    }
+
+    case 'top-heavy': {
+      // Strong top bias: row 0 = 1.0, bottom row = 0.05
+      return Math.max(0.05, Math.pow(1 - rowFrac, 1.4));
+    }
+
+    case 'bottom-heavy': {
+      return Math.max(0.05, Math.pow(rowFrac, 1.4));
+    }
+
+    case 'diagonal': {
+      // Heavy along the top-left → bottom-right diagonal
+      const diagDist = Math.abs(colFrac - rowFrac);
+      return Math.max(0.05, Math.pow(1 - diagDist, 1.5));
+    }
+
+    case 'diagonal-inv': {
+      // Heavy along the bottom-left → top-right diagonal
+      const diagDist = Math.abs(colFrac - (1 - rowFrac));
+      return Math.max(0.05, Math.pow(1 - diagDist, 1.5));
+    }
+
+    default:
+      return 1;
+  }
+}
+
+// --- Core generator ---
+function generatePattern(seed) {
+  const W = parseInt(document.getElementById('svgW').value) || 1080;
+  const H = parseInt(document.getElementById('svgH').value) || 1080;
+  const numCols = parseInt(document.getElementById('numCols').value);
+  const widthTaper = parseInt(document.getElementById('widthTaper').value) / 100;
+  const rowCount = parseInt(document.getElementById('rowCount').value);
+  const heightVar = parseInt(document.getElementById('heightVar').value) / 100;
+  const fillAmount = parseInt(document.getElementById('fillAmount').value) / 100;
+  const useAccent = document.getElementById('useAccent').checked;
+  const accentRatio = useAccent ? parseInt(document.getElementById('accentRatio').value) / 100 : 0;
+  const distribution = document.getElementById('distribution').value;
+
+  const theme = THEMES[currentTheme];
+  const inverse = document.getElementById('useInverse').checked;
+  const colorBg = inverse ? theme.primary : theme.bg;
+  const colorPrimary = inverse ? theme.bg : theme.primary;
+  const colorAccent = '#57FF8F';
+
+  const rng = mulberry32(seed);
+
+  // Column widths — exponential decay (original character).
+  // The taper only affects visual width, not fill density,
+  // so distribution patterns remain visible.
+  let colWidths = [];
+  for (let i = 0; i < numCols; i++) {
+    const t = i / Math.max(1, numCols - 1);
+    const k = widthTaper * 3.5;
+    const taper = Math.exp(-k * t);
+    const jitter = 0.92 + rng() * 0.16;
+    colWidths.push(taper * jitter);
+  }
+
+  const totalRatio = colWidths.reduce((a, b) => a + b, 0);
+  let colXs = [];
+  let colWsPx = [];
+  let cumW = 0;
+  for (let i = 0; i < numCols; i++) {
+    const xStart = Math.round(cumW / totalRatio * W);
+    cumW += colWidths[i];
+    const xEnd = i === numCols - 1 ? W : Math.round(cumW / totalRatio * W);
+    colXs.push(xStart);
+    colWsPx.push(xEnd - xStart);
+  }
+
+  let rects = [];
+  let prevColFilled = [];
+
+  for (let ci = 0; ci < numCols; ci++) {
+    const colFrac = numCols > 1 ? ci / (numCols - 1) : 0.5;
+    const colW = colWsPx[ci];
+
+    // All columns get same row count for predictable distribution
+    const colRowCount = rowCount;
+    const phaseOffset = rng() * 0.5;
+
+    let rowHeights = [];
+    const baseH = H / colRowCount;
+    for (let ri = 0; ri < colRowCount; ri++) {
+      const variance = 1 + (rng() * 2 - 1) * heightVar * 0.6;
+      let h = baseH * Math.max(0.4, variance);
+      if (ri === 0) h *= (1 - phaseOffset);
+      rowHeights.push(h);
+    }
+
+    const totalH = rowHeights.reduce((a, b) => a + b, 0);
+    let rows = [];
+    let cumulative = 0;
+    for (let ri = 0; ri < colRowCount; ri++) {
+      const yStart = Math.round(cumulative / totalH * H);
+      cumulative += rowHeights[ri];
+      const yEnd = ri === colRowCount - 1 ? H : Math.round(cumulative / totalH * H);
+      rows.push({ y: yStart, h: yEnd - yStart });
+    }
+
+    let prevFilled = false;
+    const colFilledBlocks = [];
+
+    for (let ri = 0; ri < colRowCount; ri++) {
+      const rowFrac = colRowCount > 1 ? ri / (colRowCount - 1) : 0.5;
+      const weight = getDistributionWeight(distribution, colFrac, rowFrac);
+      // Probability is fillAmount * distribution weight (no width dampen).
+      const prob = fillAmount * weight;
+
+      const roll = rng();
+      const accentRoll = rng();
+
+      if (!prevFilled && roll < prob) {
+        const blockY = rows[ri].y;
+        const blockH = rows[ri].h;
+        const blockBottom = blockY + blockH;
+
+        let maxOverlap = 0;
+        if (ci > 0 && prevColFilled.length > 0) {
+          for (const prev of prevColFilled) {
+            const overlapTop = Math.max(blockY, prev.y);
+            const overlapBot = Math.min(blockBottom, prev.y + prev.h);
+            if (overlapBot > overlapTop) {
+              const overlapAmount = (overlapBot - overlapTop) / Math.min(blockH, prev.h);
+              maxOverlap = Math.max(maxOverlap, overlapAmount);
+            }
+          }
+        }
+
+        if (maxOverlap < 0.5) {
+          const isAccent = accentRoll < accentRatio;
+          rects.push({
+            x: colXs[ci],
+            y: blockY,
+            w: colWsPx[ci],
+            h: blockH,
+            color: isAccent ? colorAccent : colorPrimary
+          });
+          colFilledBlocks.push({ y: blockY, h: blockH });
+          prevFilled = true;
+        } else {
+          prevFilled = false;
+        }
+      } else {
+        prevFilled = false;
+      }
+    }
+    prevColFilled = colFilledBlocks;
+  }
+
+  let svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" shape-rendering="crispEdges">\n`;
+  svg += `<rect width="${W}" height="${H}" fill="${colorBg}"/>\n`;
+  for (const r of rects) {
+    svg += `<rect x="${r.x}" y="${r.y}" width="${r.w}" height="${r.h}" fill="${r.color}"/>\n`;
+  }
+  svg += `</svg>`;
+  return svg;
+}
+
+// --- UI state ---
+let currentSeed = Math.floor(Math.random() * 999999);
+
+function generate() {
+  currentSeed = Math.floor(Math.random() * 999999);
+  updatePreviewBg();
+  render();
+}
+
+function render() {
+  const container = document.getElementById('preview-container');
+  container.innerHTML = generatePattern(currentSeed);
+}
+
+function copySVG() {
+  const svg = generatePattern(currentSeed);
+  navigator.clipboard.writeText(svg).then(() => {
+    const btn = document.getElementById('copyBtn');
+    btn.textContent = '✓ Copied';
+    setTimeout(() => btn.textContent = 'Copy SVG', 1200);
+  });
+}
+
+// Spacebar to regenerate
+document.addEventListener('keydown', e => {
+  if (e.key === ' ' && !['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName)) {
+    e.preventDefault();
+    generate();
+  }
+});
+
+updatePreviewBg();
+render();
+</script>
+</body>
+</html>
